@@ -14,7 +14,6 @@ def _build_email_html(news_results, hot_search_results, config):
     """构建美观的 HTML 邮件内容"""
     today = datetime.now().strftime("%Y年%m月%d日")
 
-    # 样式
     style = """
     <style>
         body { font-family: -apple-system, 'PingFang SC','Microsoft YaHei',sans-serif;
@@ -29,7 +28,7 @@ def _build_email_html(news_results, hot_search_results, config):
                          border-bottom: 2px solid #1a73e8; padding-bottom: 8px;
                          margin: 0 0 16px; }
         .article { margin-bottom: 16px; padding: 12px; border-radius: 6px;
-                   border: 1px solid #eee; transition: border-color .2s; }
+                   border: 1px solid #eee; }
         .article:hover { border-color: #1a73e8; }
         .article a { color: #222; text-decoration: none; display: block; }
         .article a:hover { color: #1a73e8; }
@@ -38,29 +37,29 @@ def _build_email_html(news_results, hot_search_results, config):
         .article .summary { font-size: 12px; color: #666; line-height: 1.5; }
         .article .meta { font-size: 11px; color: #999; margin-top: 6px; }
 
-        .hot-section { background: #fff8f0; border-radius: 8px; padding: 16px;
+        .hot-section { background: #fff8f0; border-radius: 8px; padding: 12px 16px;
                        margin-bottom: 16px; }
         .hot-section .hot-title { font-size: 15px; font-weight: 600;
                                    color: #e65100; margin-bottom: 12px; }
-        .hot-item { display: flex; align-items: flex-start; padding: 6px 0;
+        .hot-item { display: flex; align-items: center; padding: 7px 0;
                     border-bottom: 1px solid #f0e0d0; font-size: 13px; }
         .hot-item:last-child { border-bottom: none; }
-        .hot-rank { flex-shrink: 0; width: 24px; height: 24px; border-radius: 4px;
+        .hot-rank { flex-shrink: 0; width: 22px; height: 22px; border-radius: 4px;
                     display: flex; align-items: center; justify-content: center;
                     font-size: 11px; font-weight: 600; margin-right: 8px; }
         .hot-rank.top3 { background: #e65100; color: #fff; }
         .hot-rank.normal { background: #f5e6d8; color: #8d6e63; }
         .hot-text { flex: 1; line-height: 1.5; }
-        .hot-number { font-size: 11px; color: #999; margin-left: 6px; }
-
+        .hot-text a { color: #333; text-decoration: none; }
+        .hot-text a:hover { color: #e65100; text-decoration: underline; }
+        .hot-number { font-size: 11px; color: #999; margin-left: 4px;
+                       flex-shrink: 0; }
         .footer { background: #fafafa; padding: 20px 24px; text-align: center;
                   font-size: 12px; color: #999; border-top: 1px solid #eee; }
-        .footer a { color: #1a73e8; text-decoration: none; }
         .empty { color: #999; font-size: 13px; font-style: italic; }
     </style>
     """
 
-    # 头部
     html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="utf-8">{style}</head>
@@ -84,10 +83,17 @@ def _build_email_html(news_results, hot_search_results, config):
             for item in hs["items"]:
                 rank_class = "top3" if item["rank"] <= 3 else "normal"
                 hot_str = f'<span class="hot-number">{item["hot"]}</span>' if item.get("hot") else ""
+
+                if item.get("url"):
+                    link = f'<a href="{item["url"]}" target="_blank">{item["title"]}</a>'
+                else:
+                    link = item["title"]
+
                 html += (
                     f'<div class="hot-item">'
                     f'<span class="hot-rank {rank_class}">{item["rank"]}</span>'
-                    f'<span class="hot-text">{item["title"]}{hot_str}</span>'
+                    f'<span class="hot-text">{link}</span>'
+                    f'{hot_str}'
                     f'</div>'
                 )
             html += '</div>'
@@ -123,8 +129,7 @@ def _build_email_html(news_results, hot_search_results, config):
     html += (
         '<div class="footer">'
         f'<p>发送时间：{datetime.now().strftime("%Y-%m-%d %H:%M")}</p>'
-        '<p>由 News Aggregator 自动发送 · <a href="mailto:'
-        f'{config["email"]["sender"]}">联系管理员</a></p>'
+        f'<p>由 News Aggregator 自动发送</p>'
         '</div></div></body></html>'
     )
 
@@ -170,4 +175,3 @@ def send(config, news_results, hot_search_results):
     except Exception as e:
         logger.error(f"发送邮件时出错: {e}")
         raise
-

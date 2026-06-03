@@ -1,4 +1,4 @@
-"""RSS 新闻抓取模块"""
+"""RSS 新闻抓取模块（支持自动翻译）"""
 
 import logging
 import re
@@ -24,7 +24,23 @@ def clean_html(text):
         return ""
     text = re.sub(r"<[^>]+>", "", text)
     text = re.sub(r"\s+", " ", text).strip()
-    return text[:200] + "..." if len(text) > 200 else text
+    return text[:300] + "..." if len(text) > 300 else text
+
+
+def _translate_text(text, target="zh"):
+    """使用阿里翻译将英文文本翻译成中文"""
+    if not text or len(text.strip()) < 3:
+        return text
+    try:
+        import translators as ts
+        result = ts.translate_text(
+            text, translator="alibaba",
+            from_language="en", to_language=target,
+        )
+        return result.strip()
+    except Exception as e:
+        logger.debug(f"翻译失败: {e}")
+        return text
 
 
 def fetch_rss(source):
@@ -32,6 +48,7 @@ def fetch_rss(source):
     name = source.get("name", "未知")
     url = source["url"]
     max_articles = source.get("max_articles", 10)
+    need_translate = source.get("translate", False)
 
     logger.info(f"正在抓取: {name} <{url}>")
 
@@ -54,6 +71,15 @@ def fetch_rss(source):
         if not title:
             continue
 
+        if need_translate:
+            title_cn = _translate_text(title)
+            if title_cn and title_cn != title:
+                title = f"{title_cn}（{title}）"
+            if summary and summary != "暂无摘要":
+                summary_cn = _translate_text(summary[:200])
+                if summary_cn and summary_cn != summary[:200]:
+                    summary = summary_cn
+
         articles.append({
             "title": title,
             "link": link,
@@ -61,7 +87,8 @@ def fetch_rss(source):
             "published": published,
         })
 
-    logger.info(f"  -> 获取 {len(articles)} 条来自 {name}")
+    logger.info(f"  -> 获取 {len(articles)} 条来自 {name}"
+                + ("（已翻译）" if need_translate else ""))
     return {"source_name": name, "articles": articles}
 
 
@@ -72,4 +99,3 @@ def fetch_all(news_sources):
         result = fetch_rss(source)
         results.append(result)
     return results
-
