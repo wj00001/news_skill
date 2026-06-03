@@ -27,8 +27,13 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Store# Python
+.DS_Store
+
+### Python ###
 __pycache__/
 *.pyc
 *.pyo
+
+### Project ###
 news_cron.log
+news_aggregator/config.yaml

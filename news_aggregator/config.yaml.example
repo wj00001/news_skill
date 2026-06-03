@@ -1,11 +1,18 @@
+# ============================================
+# 每日新闻聚合 - 配置文件模板
+# 复制为 config.yaml 并填入你的信息
+# ============================================
+
 email:
+  # QQ邮箱 SMTP 配置（其他邮箱改对应服务器地址）
   smtp_host: smtp.qq.com
   smtp_port: 465
-  sender: 1980821093@qq.com
-  password: iypvuivohnhhbcfh
+  sender: your_email@qq.com
+  password: your_smtp_auth_code
+  # 收件人列表（支持多人）
   recipients:
-    - 1980821093@qq.com
-    # - friend@example.com    # 加人就去掉注释
+    - your_email@qq.com
+    # - friend@example.com
 
 news_sources:
   - name: 36氪
