@@ -1,0 +1,43 @@
+email:
+  smtp_host: smtp.qq.com
+  smtp_port: 465
+  sender: 1980821093@qq.com
+  password: iypvuivohnhhbcfh
+  recipients:
+    - 1980821093@qq.com
+    # - friend@example.com    # 加人就去掉注释
+
+news_sources:
+  - name: 36氪
+    url: https://36kr.com/feed
+    max_articles: 10
+  - name: 人民网-时政
+    url: http://www.people.com.cn/rss/politics.xml
+    max_articles: 8
+  - name: 人民网-财经
+    url: http://www.people.com.cn/rss/finance.xml
+    max_articles: 8
+  - name: 人民网-国际
+    url: http://www.people.com.cn/rss/world.xml
+    max_articles: 8
+  - name: 新浪新闻
+    url: http://rss.sina.com.cn/news/china/focus15.xml
+    max_articles: 8
+  - name: 新华网
+    url: http://www.xinhuanet.com/politics/news_politics.xml
+    max_articles: 8
+  - name: 环球网
+    url: http://www.huanqiu.com/rss/1.xml
+    max_articles: 8
+
+hot_search:
+  enabled: true
+  sources:
+    - baidu
+  max_items: 20
+
+schedule:
+  enabled: true
+  time: "08:00"
+
+email_subject: "每日新闻摘要 - {date}"
