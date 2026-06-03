@@ -4,7 +4,7 @@
 # ============================================
 
 email:
-  # QQ邮箱 SMTP 配置（其他邮箱改对应服务器地址）
+  # QQ邮箱 SMTP 配置（其他邮箱改对应服务器地址。）
   smtp_host: smtp.qq.com
   smtp_port: 465
   sender: your_email@qq.com
