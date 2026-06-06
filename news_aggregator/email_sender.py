@@ -160,7 +160,7 @@ def send(config, news_results, hot_search_results):
         password = config["email"]["password"]
         recipients = config["email"]["recipients"]
 
-        with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30) as server:
             server.login(sender, password)
             server.sendmail(sender, recipients, msg.as_string())
 

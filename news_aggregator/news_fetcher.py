@@ -8,7 +8,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-REQUEST_TIMEOUT = 15
+REQUEST_TIMEOUT = 30
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -28,16 +28,26 @@ def clean_html(text):
 
 
 def _translate_text(text, target="zh"):
-    """使用阿里翻译将英文文本翻译成中文"""
+    """使用阿里翻译将英文文本翻译成中文（带 10s 超时保护）"""
     if not text or len(text.strip()) < 3:
         return text
     try:
         import translators as ts
-        result = ts.translate_text(
-            text, translator="alibaba",
-            from_language="en", to_language=target,
-        )
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+
+        def do_translate():
+            return ts.translate_text(
+                text, translator="alibaba",
+                from_language="en", to_language=target,
+            )
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(do_translate)
+            result = future.result(timeout=10)
         return result.strip()
+    except FuturesTimeout:
+        logger.debug(f"翻译超时（10s），跳过: {text[:40]}...")
+        return text
     except Exception as e:
         logger.debug(f"翻译失败: {e}")
         return text

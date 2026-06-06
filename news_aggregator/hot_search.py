@@ -17,7 +17,7 @@ HEADERS = {
     ),
 }
 
-REQUEST_TIMEOUT = 15
+REQUEST_TIMEOUT = 30
 
 
 def _make_baidu_link(keyword):
