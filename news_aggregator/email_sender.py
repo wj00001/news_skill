@@ -1,6 +1,8 @@
 """HTML 邮件生成与发送模块"""
 
 import logging
+import socket
+import time
 import smtplib
 from datetime import datetime
 from email.mime.text import MIMEText
@@ -8,6 +10,26 @@ from email.mime.multipart import MIMEMultipart
 from email.header import Header
 
 logger = logging.getLogger(__name__)
+
+
+def _wait_for_network(host: str, port: int, max_retries: int = 10, interval: int = 30) -> bool:
+    """
+    等待网络就绪：在 SMTP 连接前确保网络可达
+    电脑从睡眠唤醒后，网络可能需要几十秒才能完全恢复
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            with socket.create_connection((host, port), timeout=5):
+                logger.info(f'网络就绪（第 {attempt} 次连接 {host}:{port} 成功）')
+                return True
+        except (socket.timeout, ConnectionRefusedError, OSError) as e:
+            if attempt < max_retries:
+                logger.warning(f'网络未就绪（第 {attempt}/{max_retries} 次），{interval} 秒后重试: {e}')
+                time.sleep(interval)
+            else:
+                logger.error(f'网络连接失败（已重试 {max_retries} 次）: {e}')
+                return False
+    return False
 
 
 def _build_email_html(news_results, hot_search_results, config):
@@ -152,6 +174,11 @@ def send(config, news_results, hot_search_results):
     msg.attach(part)
 
     logger.info(f"正在发送邮件到: {config['email']['recipients']}")
+
+    # 等待网络就绪（唤醒后网络可能还没好）
+    smtp_host = config["email"]["smtp_host"]
+    smtp_port = config["email"]["smtp_port"]
+    _wait_for_network(smtp_host, smtp_port)
 
     try:
         smtp_host = config["email"]["smtp_host"]
